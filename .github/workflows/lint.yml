@@ -1,0 +1,27 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 isort
+    - name: Check formatting with black
+      run: black --check disk_canvas tests
+    - name: Check imports with isort
+      run: isort --check-only disk_canvas tests
+    - name: Lint with flake8
+      run: flake8 disk_canvas tests --max-line-length=88 --extend-ignore=E203
