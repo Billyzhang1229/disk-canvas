@@ -13,7 +13,6 @@ authors = [
     {name = "Ao Zhang", email = "billyzhang1229@gmail.com"},
 ]
 dependencies = [
-    "argparse",
     "typing"
 ]
 classifiers = [
