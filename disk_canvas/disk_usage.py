@@ -147,10 +147,13 @@ class Node:
         # Handle files without extensions
         if not self.is_dir:
             self.extension = os.path.splitext(path)[1].lower()
-            self.category = get_category_for_extension(self.extension)
+            # For files without extension, use the full filename as the extension
+            # if it starts with a dot (like .gitignore)
+            if not self.extension and name.startswith("."):
+                self.extension = name.lower()
         else:
             self.extension = ""
-            self.category = FileCategory.OTHER
+        self.category = get_category_for_extension(self.extension)
         self.color = None
         self.texture = None
 
@@ -211,8 +214,9 @@ def gather_items(root: Node, stats: ScanStats = None) -> List[Node]:
     # Calculate sizes - directories don't contribute to size
     for node in reversed(nodes):
         if node.is_dir:
-            # Directory size is sum of children's sizes but doesn't contribute to parent
+            # Directory size is sum of immediate children's sizes
             node.size = sum(child.size for child in node.children)
+            # But don't propagate directory size upwards
         else:
             try:
                 node.size = os.path.getsize(node.path)
@@ -274,8 +278,8 @@ def print_top_k_largest(
     for item in filtered_items:
         size_str = human_readable_size(item.size)
         item_type = "[DIR]" if item.is_dir else "[FILE]"
-        # Always show the category, even for files without extensions
-        category = item.category.name
+        # For directories, show DIR. For files, show their category
+        category = "DIR" if item.is_dir else item.category.name
         rel_path = os.path.relpath(item.path)
         line = (
             f"{size_str:>10} {item_type:<6} {item.depth:<6} "
